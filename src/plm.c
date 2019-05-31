@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
     alignment_t *ali = MSARead(alignFile, options);
 
     /* Reweight sequences by inverse neighborhood density */
-    MSAReweightSequences(ali, options);
+    MSAReweightSequences(repeatWeightsFile,ali, options);
 
     /* Compute sitwise and pairwise marginal distributions */
     MSACountMarginals(ali, options);
@@ -542,11 +542,12 @@ letter_t MSAReadCode(char c, char *alphabet, int nCodes) {
     return i;
 }
 
-void MSAReweightSequences(alignment_t *ali, options_t *options) {
+void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *options) {
     /* Reweight seqeuences by their inverse neighborhood size. Each sequence's
        weight is the inverse of the number of neighboring sequences with less
        than THETA percent divergence
     */
+    
     for (int i = 0; i < ali->nSeqs; i++) ali->weights[i] = 1.0;
 
     /* Only apply reweighting if theta is on [0,1] */
