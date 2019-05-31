@@ -762,23 +762,27 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
     }
     /* Ada repeat weights multiplication */
     if (repeatWeightsFile!=NULL) {
+        fprintf(stderr,"repeats file exists\n");
         fpRepeatWeights = fopen(repeatWeightsFile,"r");
         char *line = (char *) malloc(100 * sizeof(char));
+        fprintf(stderr,"memory allocated for repeat weights lines\n");
         int j = 0;
         numeric_t *repeatWeights = (numeric_t *) malloc(ali->nSeqs * sizeof(numeric_t));
-    
+        fprintf(stderr,"memory allocated for repeat weights\n");
         while(fgets(line,100,fpRepeatWeights)) {
-            if(sscanf(line,"%f",repeatWeights[j])==2) {
+            if(sscanf(line,"%lf",&repeatWeights[j])==2) {
                 ++j;
+            }
                 /* --------------------_DEBUG_------------------*/
                 fprintf(stderr,"repeat weights: %lf \n",repeatWeights[j]);
                 fprintf(stderr,"file input line: %s \n", line);
                 /* --------------------^DEBUG^------------------*/
-            }
         }
+        fprintf(stderr,"repeats while loop success!\n");
         for (int i = 0; i < ali->nSeqs; i++) {
             ali->weights[i] *= repeatWeights[i];
         }
+    fprintf(stderr,"repeats multiplication successful. process did not fail!\n");
     free(repeatWeights);
     free(line);
     }
