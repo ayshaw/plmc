@@ -762,7 +762,7 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
     }
     /* Ada repeat weights multiplication */
     if (fpRepeatWeights!=NULL) {
-        fpRepeatWeights = fopen(repeatWeightsFile,'r');
+        fpRepeatWeights = fopen(repeatWeightsFile,"r");
         char line[100];
         int j = 0;
         numeric_t repeatWeights[ali->nSeqs];
@@ -779,8 +779,8 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
             ali->weights[i] *= repeatWeights[i];
         
         }
-    free(repeatWeights)
-    free(line)
+    free(repeatWeights);
+    free(line);
     }
     
 
