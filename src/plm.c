@@ -247,7 +247,8 @@ alignment_t *MSARead(char *alignFile, options_t *options) {
     ali->target = -1;
     ali->offsets = NULL;
     ali->nEff = 0;
-    ali->weights = ali->fi = ali->fij = NULL;
+    /* Ada added repeatWeights initialization */
+    ali->weights = ali->fi = ali->fij = ali->repeatWeights = NULL;
     ali->nParams = 0;
 
     /* Verify alignment dimensions and structure (first pass through file) */
