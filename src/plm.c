@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     char *alignFile = NULL;
     char *outputFile = NULL;
     char *couplingsFile = NULL;
-
+    char *repeatWeightsFile = NULL;
     /* Default options */
     options_t *options = (options_t *) malloc(sizeof(options_t));
     
