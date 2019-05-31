@@ -158,6 +158,9 @@ int main(int argc, char **argv) {
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--focus") == 0
                     || strcmp(argv[arg], "-f") == 0)) {
             options->target = argv[++arg];
+        } else if ((arg < argc-1) && (strcmp(argv[arg], "--repeatweights") == 0
+                    || strcmp(argv[arg], "-rw") == 0)) {
+            repeatWeights = argv[++arg];
         } else if ((arg < argc-1) && strcmp(argv[arg], "--fast") == 0) {
             options->sgd = 1;
             options->fastWeights = 100;
