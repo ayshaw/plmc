@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
             options->target = argv[++arg];
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--repeatweights") == 0
                     || strcmp(argv[arg], "-rw") == 0)) {
-            repeatWeights = argv[++arg];
+            repeatWeightsFile = argv[++arg];
         } else if ((arg < argc-1) && strcmp(argv[arg], "--fast") == 0) {
             options->sgd = 1;
             options->fastWeights = 100;
