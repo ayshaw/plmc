@@ -115,7 +115,7 @@ typedef struct {
 alignment_t *MSARead(char *alignFile, options_t *options);
 
 /* Reweights sequences by their inverse neighborhood size */
-void MSAReweightSequences(alignment_t *ali, options_t *options);
+void MSAReweightSequences(char *repeatWeightsFile, alignment_t *ali, options_t *options);
 
 /* Counts empirical sitewise(fi) and pairwise(fij) marginals of the alignment */
 void MSACountMarginals(alignment_t *ali, options_t *options);
