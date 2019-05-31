@@ -776,7 +776,7 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
                 /* --------------------^DEBUG^------------------*/
             }
         }
-        for (int i =0, i< ali-nSeqs; i++) {
+        for (int i = 0; i < ali->nSeqs; i++) {
             ali->weights[i] *= repeatWeights[i];
         }
     free(repeatWeights);
