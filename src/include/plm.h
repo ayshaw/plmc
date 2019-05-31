@@ -97,6 +97,8 @@ typedef struct {
     numeric_t *weights;
     numeric_t *fi;
     numeric_t *fij;
+    /* Ada's addition for repeats*/
+    numeric_t *repeatWeights;
 
     /* Inference */
     int nParams;
