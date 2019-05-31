@@ -761,7 +761,7 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
             ali->weights[i] = 1.0 / ali->weights[i];
     }
     /* Ada repeat weights multiplication */
-    if (fpRepeatWeights!=NULL) {
+    if (repeatWeightsFile!=NULL) {
         fpRepeatWeights = fopen(repeatWeightsFile,"r");
         char line[100];
         int j = 0;
@@ -771,8 +771,8 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
             if(sscanf(line,"%f",repeatWeights[j])==2) {
                 ++j;
                 /* --------------------_DEBUG_------------------*/
-                printf("weights: %lf \n",repeatWeights[j]);
-                printf("line: %s \n", line);
+                fprintf(stderr,"repeat weights: %lf \n",repeatWeights[j]);
+                fprintf(stderr,"file input line: %s \n", line);
                 /* --------------------^DEBUG^------------------*/
             }
         }
