@@ -547,7 +547,7 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
        weight is the inverse of the number of neighboring sequences with less
        than THETA percent divergence
     */
-    
+    FILE *fpRepeatWeights = NULL; 
     for (int i = 0; i < ali->nSeqs; i++) ali->weights[i] = 1.0;
 
     /* Only apply reweighting if theta is on [0,1] */
@@ -760,6 +760,29 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
         for (int i = 0; i < ali->nSeqs; i++)
             ali->weights[i] = 1.0 / ali->weights[i];
     }
+    /* Ada repeat weights multiplication */
+    if (fpRepeatWeights!=NULL) {
+        fpRepeatWeights = fopen(repeatWeightsFile,'r');
+        char line[100];
+        int j = 0;
+        numeric_t repeatWeights[ali->nSeqs];
+    
+        while(fgets(line,100,fpRepeatWeights)) {
+            if(sscanf(line,"%f",repeatWeights[j])==2) {
+                ++j;
+                /* --------------------_DEBUG_------------------*/
+                printf("weights: %lf \n",repeatWeights[j]);
+                printf("line: %s \n", line);
+                /* --------------------^DEBUG^------------------*/
+            }
+        for (i =0, i< ali-nSeqs; i++) {
+            ali->weights[i] *= repeatWeights[i];
+        
+        }
+    free(repeatWeights)
+    free(line)
+    }
+    
 
     /* Scale sets the effective number of samples per neighborhood */
     for (int i = 0; i < ali->nSeqs; i++)
