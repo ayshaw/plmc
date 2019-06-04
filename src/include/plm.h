@@ -97,8 +97,6 @@ typedef struct {
     numeric_t *weights;
     numeric_t *fi;
     numeric_t *fij;
-    /* Ada's addition for repeats*/
-    numeric_t *repeatWeights;
 
     /* Inference */
     int nParams;
@@ -116,7 +114,7 @@ alignment_t *MSARead(char *alignFile, options_t *options);
 
 /* Reweights sequences by their inverse neighborhood size */
 void MSAReweightSequences(char *repeatWeightsFile, alignment_t *ali, options_t *options);
-
+void MSAReweightSequencesHenikoff(char *heniWeightsFile, alignment_t *ali, options_t *options);
 /* Counts empirical sitewise(fi) and pairwise(fij) marginals of the alignment */
 void MSACountMarginals(alignment_t *ali, options_t *options);
 

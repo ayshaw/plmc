@@ -56,8 +56,9 @@ const char *usage =
 "      -g  --gapignore                  Model sequence likelihoods only by coding, non-gapped portions\n"
 "      -m  --maxiter                    Maximum number of iterations\n"
 "      -n  --ncores    [<number>|max]   Maximum number of threads to use in OpenMP\n"
-"      -h  --help                       Usage\n\n";
-
+"      -h  --help                       Usage\n"
+"	   -hw --heniweights weightsFile    Use repeats correction with henikoff phylogeny reweighting\n"
+"	   -rw --repeatweights weightsFile  Use repeats correction\n\n";
 /* Internal functions to MSARead */
 void MSAReadSeq(char *seq, FILE *fpAli);
 letter_t MSAReadCode(char c, char *alphabet, int nCodes);
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
     char *outputFile = NULL;
     char *couplingsFile = NULL;
     char *repeatWeightsFile = NULL;
+    char *heniWeightsFile = NULL;
     /* Default options */
     options_t *options = (options_t *) malloc(sizeof(options_t));
     
@@ -161,6 +163,9 @@ int main(int argc, char **argv) {
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--repeatweights") == 0
                     || strcmp(argv[arg], "-rw") == 0)) {
             repeatWeightsFile = argv[++arg];
+        } else if ((arg < argc-1) && (strcmp(argv[arg], "--heniweights") == 0
+                    || strcmp(argv[arg], "-rw") == 0)) {
+            heniWeightsFile = argv[++arg];
         } else if ((arg < argc-1) && strcmp(argv[arg], "--fast") == 0) {
             options->sgd = 1;
             options->fastWeights = 100;
@@ -208,8 +213,13 @@ int main(int argc, char **argv) {
     /* Read multiple seqence alignment */
     alignment_t *ali = MSARead(alignFile, options);
 
-    /* Reweight sequences by inverse neighborhood density */
+    if (heniWeightsFile == NULL) {
+	/* Reweight sequences by inverse neighborhood density */
     MSAReweightSequences(repeatWeightsFile,ali, options);
+    } else {
+    /* Use simpler Henikoff weights */
+	MSAReweightSequencesHenikoff(heniWeightsFile,ali,options);
+	}
 
     /* Compute sitwise and pairwise marginal distributions */
     MSACountMarginals(ali, options);
@@ -251,7 +261,7 @@ alignment_t *MSARead(char *alignFile, options_t *options) {
     ali->offsets = NULL;
     ali->nEff = 0;
     /* Ada added repeatWeights initialization */
-    ali->weights = ali->fi = ali->fij = ali->repeatWeights = NULL;
+    ali->weights = ali->fi = ali->fij = NULL;
     ali->nParams = 0;
 
     /* Verify alignment dimensions and structure (first pass through file) */
@@ -755,11 +765,21 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
                 }
             #endif
         }
-
+	
         /* Reweight sequences by the inverse of the neighborhood size */
         for (int i = 0; i < ali->nSeqs; i++)
             ali->weights[i] = 1.0 / ali->weights[i];
     }
+    
+
+    /* Scale sets the effective number of samples per neighborhood */
+    for (int i = 0; i < ali->nSeqs; i++)
+            ali->weights[i] *= options->scale;
+
+    /* The effective number of sequences is then the sum of the weights */
+    ali->nEff = 0;
+    for (int i = 0; i < ali->nSeqs; i++) ali->nEff += ali->weights[i];
+
     /* Ada repeat weights multiplication */
     if (repeatWeightsFile!=NULL) {
         fprintf(stderr,"repeats file exists\n");
@@ -786,15 +806,6 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
     free(repeatWeights);
     free(line);
     }
-    
-
-    /* Scale sets the effective number of samples per neighborhood */
-    for (int i = 0; i < ali->nSeqs; i++)
-            ali->weights[i] *= options->scale;
-
-    /* The effective number of sequences is then the sum of the weights */
-    ali->nEff = 0;
-    for (int i = 0; i < ali->nSeqs; i++) ali->nEff += ali->weights[i];
 
     if (options->theta >= 0 && options->theta <= 1) {
         fprintf(stderr, 
@@ -807,6 +818,39 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
     }
 }
 
+void MSAReweightSequencesHenikoff(char *heniWeightsFile, alignment_t *ali, options_t *options) {
+	FILE *fpHeniWeights = NULL;
+	for (int i = 0; i < ali->nSeqs; i++) ali->weights[i] = 1.0;
+	if (heniWeightsFile!=NULL) {
+        fprintf(stderr,"henikoff and repeats file exists\n");
+        fpHeniWeights = fopen(heniWeightsFile,"r");
+        char *line = (char *) malloc(100 * sizeof(char));
+        fprintf(stderr,"memory allocated for henikoff and repeat weights lines\n");
+        int j = 0;
+        numeric_t *repeatWeights = (numeric_t *) malloc(ali->nSeqs * sizeof(numeric_t));
+        fprintf(stderr,"memory allocated for henikoff and repeats weights\n");
+        while(fgets(line,100,fpHeniWeights)) {
+            if(sscanf(line,"%lf",&repeatWeights[j])==2) {
+                ++j;
+            }
+                /* --------------------_DEBUG_------------------*/
+                fprintf(stderr,"repeat*henikoff weights: %lf \n",repeatWeights[j]);
+                fprintf(stderr,"file input line: %s \n", line);
+                /* --------------------^DEBUG^------------------*/
+        }
+        fprintf(stderr,"repeats while loop success!\n");
+        for (int i = 0; i < ali->nSeqs; i++) {
+            ali->weights[i] *= repeatWeights[i];
+        }
+    fprintf(stderr,"repeats multiplication successful. process did not fail!\n");
+    free(repeatWeights);
+    free(line);
+    }
+    
+	/* The effective number of sequences is then the sum of the weights */
+    ali->nEff = 0;
+    for (int i = 0; i < ali->nSeqs; i++) ali->nEff += ali->weights[i];	
+}
 void MSACountMarginals(alignment_t *ali, options_t *options) {
     /* Compute first and second order marginal distributions, according to the 
        sequence weights
