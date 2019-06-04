@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
                     || strcmp(argv[arg], "-rw") == 0)) {
             repeatWeightsFile = argv[++arg];
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--heniweights") == 0
-                    || strcmp(argv[arg], "-rw") == 0)) {
+                    || strcmp(argv[arg], "-hw") == 0)) {
             heniWeightsFile = argv[++arg];
         } else if ((arg < argc-1) && strcmp(argv[arg], "--fast") == 0) {
             options->sgd = 1;
@@ -218,6 +218,7 @@ int main(int argc, char **argv) {
     MSAReweightSequences(repeatWeightsFile,ali, options);
     } else {
     /* Use simpler Henikoff weights */
+	fprintf(stderr,"Henikoff phylogeny reweighting chosen!!");
 	MSAReweightSequencesHenikoff(heniWeightsFile,ali,options);
 	}
 
