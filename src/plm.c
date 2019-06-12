@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--repeatweights") == 0
                     || strcmp(argv[arg], "-rw") == 0)) {
             repeatWeightsFile = argv[++arg];
+			fprintf(stderr,"repeat weights method chosen!\n");
         } else if ((arg < argc-1) && (strcmp(argv[arg], "--heniweights") == 0
                     || strcmp(argv[arg], "-hw") == 0)) {
             heniWeightsFile = argv[++arg];
@@ -774,13 +775,24 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
     
 
     /* Scale sets the effective number of samples per neighborhood */
-    for (int i = 0; i < ali->nSeqs; i++)
+    for (int i = 0; i < ali->nSeqs; i++) {
             ali->weights[i] *= options->scale;
+    }
 
+	/*--------------------_DEBUG_---------------------*/
+	//for (int i = 0; i < ali->nSeqs; i++) {
+	//	fprintf(stderr,"%lf",ali->weights[i]);
+	//}
+	//exit(1);
+	/*--------------------^DEBUG^--------------------*/
+    numeric_t *weightsratio = (numeric_t *) malloc(ali->nSeqs * sizeof(numeric_t));
     /* The effective number of sequences is then the sum of the weights */
     ali->nEff = 0;
-    for (int i = 0; i < ali->nSeqs; i++) ali->nEff += ali->weights[i];
-
+    for (int i = 0; i < ali->nSeqs; i++) {
+		ali->nEff += ali->weights[i];
+		weightsratio[i] = ali->weights[i];
+	}
+	
     /* Ada repeat weights multiplication */
     if (repeatWeightsFile!=NULL) {
         fprintf(stderr,"repeats file exists\n");
@@ -791,12 +803,12 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
         numeric_t *repeatWeights = (numeric_t *) malloc(ali->nSeqs * sizeof(numeric_t));
         fprintf(stderr,"memory allocated for repeat weights\n");
         while(fgets(line,100,fpRepeatWeights)) {
-            if(sscanf(line,"%lf",&repeatWeights[j])==2) {
+            if(sscanf(line,"%lf",&repeatWeights[j])!=EOF) {
                 ++j;
             }
                 /* --------------------_DEBUG_------------------*/
-                fprintf(stderr,"repeat weights: %lf \n",repeatWeights[j]);
-                fprintf(stderr,"file input line: %s \n", line);
+                //fprintf(stderr,"repeat weights: %lf \n",repeatWeights[j]);
+                //fprintf(stderr,"file input line: %s \n", line);
                 /* --------------------^DEBUG^------------------*/
         }
         fprintf(stderr,"repeats while loop success!\n");
@@ -817,6 +829,13 @@ void MSAReweightSequences(char *repeatWeightsFile,alignment_t *ali, options_t *o
             "Theta not between 0 and 1, no sequence reweighting applied (N = %.2f)\n",
             ali->nEff);
     }
+	/*--------------------_DEBUG_---------------------*/
+	for (int i = 0; i < ali->nSeqs; i++) {
+		fprintf(stderr,"%f\n",ali->weights[i]/weightsratio[i]);
+	}
+	//exit(1);
+	/*--------------------^DEBUG^--------------------*/
+	free(weightsratio);
 }
 
 void MSAReweightSequencesHenikoff(char *heniWeightsFile, alignment_t *ali, options_t *options) {
@@ -831,7 +850,7 @@ void MSAReweightSequencesHenikoff(char *heniWeightsFile, alignment_t *ali, optio
         numeric_t *repeatWeights = (numeric_t *) malloc(ali->nSeqs * sizeof(numeric_t));
         fprintf(stderr,"memory allocated for henikoff and repeats weights\n");
         while(fgets(line,100,fpHeniWeights)) {
-            if(sscanf(line,"%lf",&repeatWeights[j])==2) {
+            if(sscanf(line,"%lf",&repeatWeights[j])!=EOF) {
                 ++j;
             }
                 /* --------------------_DEBUG_------------------*/
